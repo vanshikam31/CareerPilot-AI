@@ -17,6 +17,7 @@ class Settings(BaseSettings):
     gemini_model: str = "gemini-2.5-flash"
     max_upload_mb: int = 5
     embedding_model: str = "BAAI/bge-small-en-v1.5"
-
+    agent_max_steps: int = 5
+    agent_history_messages: int = 12
 
 settings = Settings()

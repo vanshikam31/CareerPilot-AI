@@ -14,10 +14,11 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
 
+from app.core import rate_limit
 from app.core.config import EMBED_DIM
 from app.database.session import Base, get_db
 from app.main import app
-from app.models import job, resume, user  # noqa: F401
+from app.models import conversation, job, resume, user  # noqa: F401
 from app.services import embeddings
 
 
@@ -36,6 +37,12 @@ def fake_embed_texts(texts: list[str]) -> list[list[float]]:
 @pytest.fixture(autouse=True)
 def fake_embeddings(monkeypatch):
     monkeypatch.setattr(embeddings, "embed_texts", fake_embed_texts)
+
+
+@pytest.fixture(autouse=True)
+def fresh_rate_limit():
+    rate_limit.reset()
+    yield
 
 
 @pytest.fixture()

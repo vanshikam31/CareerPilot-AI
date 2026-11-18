@@ -23,7 +23,7 @@ def init_db() -> None:
     """Enable pgvector, create tables and the vector index. Called once at startup."""
     with engine.begin() as conn:
         conn.execute(text("CREATE EXTENSION IF NOT EXISTS vector"))
-    from app.models import job, resume, user  # noqa: F401  (registers models)
+        from app.models import conversation, job, resume, user  # noqa: F401  (registers models)
 
     Base.metadata.create_all(bind=engine)
     with engine.begin() as conn:

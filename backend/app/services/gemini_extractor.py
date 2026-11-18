@@ -1,3 +1,4 @@
+from app.services.gemini_retry import call_with_retry
 from app.core.config import settings
 from app.schemas.resume import ResumeExtraction
 
@@ -24,14 +25,16 @@ def extract_with_gemini(text: str) -> ResumeExtraction:
         api_key=settings.gemini_api_key,
         http_options=types.HttpOptions(timeout=30_000),  # milliseconds
     )
-    response = client.models.generate_content(
-        model=settings.gemini_model,
-        contents=f"<resume>\n{text[:MAX_CHARS]}\n</resume>",
-        config=types.GenerateContentConfig(
-            system_instruction=SYSTEM_PROMPT,
-            response_mime_type="application/json",
-            response_schema=ResumeExtraction,
-            temperature=0.0,
-        ),
+    response = call_with_retry(
+        lambda: client.models.generate_content(
+            model=settings.gemini_model,
+            contents=f"<resume>\n{text[:MAX_CHARS]}\n</resume>",
+            config=types.GenerateContentConfig(
+                system_instruction=SYSTEM_PROMPT,
+                response_mime_type="application/json",
+                response_schema=ResumeExtraction,
+                temperature=0.0,
+            ),
+        )
     )
     return ResumeExtraction.model_validate_json(response.text)
