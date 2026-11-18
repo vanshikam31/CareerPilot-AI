@@ -20,9 +20,16 @@ def get_db():
 
 
 def init_db() -> None:
-    """Enable pgvector and create tables. Called once at app startup."""
+    """Enable pgvector, create tables and the vector index. Called once at startup."""
     with engine.begin() as conn:
         conn.execute(text("CREATE EXTENSION IF NOT EXISTS vector"))
-        from app.models import resume, user  # noqa: F401  (registers models)
+    from app.models import job, resume, user  # noqa: F401  (registers models)
 
     Base.metadata.create_all(bind=engine)
+    with engine.begin() as conn:
+        conn.execute(
+            text(
+                "CREATE INDEX IF NOT EXISTS jobs_embedding_hnsw "
+                "ON jobs USING hnsw (embedding vector_cosine_ops)"
+            )
+        )

@@ -9,6 +9,8 @@ bcrypt
 python-multipart
 pypdf
 google-genai
+pgvector
+fastembed
 pytest
 httpx
 fpdf2
