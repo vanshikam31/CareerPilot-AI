@@ -10,6 +10,7 @@ from app.models.conversation import Memory
 from app.models.job import Job
 from app.models.user import User
 from app.retrieval.search import SearchFilters, search_jobs
+from app.recommendations.service import NoProfileError, learning_path, recommend_for_user
 
 logger = logging.getLogger(__name__)
 
@@ -75,6 +76,23 @@ TOOL_SPECS = [
             "properties": {"fact": {"type": "string", "description": "One short sentence, max 300 characters."}},
             "required": ["fact"],
         },
+    },
+        {
+        "name": "recommend_jobs",
+        "description": "Rank jobs for THIS user from their profile (skills, target roles, level, locations). "
+                       "Returns a score, matched and missing skills and reasons. Use for 'which jobs fit me best'.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "location": {"type": "string", "description": "Optional city filter."},
+                "limit": {"type": "integer", "description": "1 to 10. Default 5."},
+            },
+        },
+    },
+    {
+        "name": "learning_path",
+        "description": "Skills the user should learn next, ranked by how many of their best-matching jobs need them.",
+        "parameters": {"type": "object", "properties": {}},
     },
 ]
 
@@ -195,6 +213,39 @@ def _save_preference(ctx: ToolContext, args: dict) -> dict:
     db.commit()
     return {"saved": True}
 
+def _recommend_jobs(ctx: ToolContext, args: dict) -> dict:
+    try:
+        recs = recommend_for_user(
+            ctx.db, ctx.user, location=_opt_str(args, "location"), limit=_int(args, "limit", 5, 1, 10)
+        )
+    except NoProfileError as exc:
+        raise ToolError(str(exc))
+    return {
+        "count": len(recs),
+        "jobs": [
+            {
+                "id": r.job.id,
+                "title": r.job.title,
+                "company": r.job.company,
+                "location": r.job.location,
+                "work_mode": r.job.work_mode,
+                "experience_level": r.job.experience_level,
+                "match_score": r.score,
+                "matched_skills": r.matched_skills,
+                "missing_skills": r.missing_skills,
+                "reasons": r.reasons,
+            }
+            for r in recs
+        ],
+    }
+
+
+def _learning_path(ctx: ToolContext, args: dict) -> dict:
+    try:
+        recs = recommend_for_user(ctx.db, ctx.user, limit=10)
+    except NoProfileError as exc:
+        raise ToolError(str(exc))
+    return {"based_on_jobs": len(recs), "skills_to_learn": learning_path(recs)[:10]}
 
 _TOOLS = {
     "search_jobs": _search_jobs,
@@ -202,6 +253,8 @@ _TOOLS = {
     "get_my_profile": _get_my_profile,
     "skill_gap": _skill_gap,
     "save_preference": _save_preference,
+    "recommend_jobs": _recommend_jobs,
+    "learning_path": _learning_path,
 }
 
 

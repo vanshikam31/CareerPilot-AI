@@ -4,7 +4,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api import assistant, auth, jobs, resume, users
+from app.api import assistant, auth, evaluation, jobs, recommendations, resume, users
 from app.core.config import settings
 from app.database.session import init_db
 from app.services import embeddings
@@ -17,7 +17,7 @@ async def lifespan(app: FastAPI):
     yield
 
 
-app = FastAPI(title=settings.app_name, version="0.4.0", lifespan=lifespan)
+app = FastAPI(title=settings.app_name, version="0.5.0", lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
@@ -31,6 +31,8 @@ app.include_router(users.router)
 app.include_router(resume.router)
 app.include_router(jobs.router)
 app.include_router(assistant.router)
+app.include_router(recommendations.router)
+app.include_router(evaluation.router)
 
 
 @app.get("/health", tags=["system"])

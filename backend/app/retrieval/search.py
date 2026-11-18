@@ -98,9 +98,10 @@ def search_jobs(
     filters: SearchFilters | None = None,
     mode: str = "hybrid",
     limit: int = 10,
+    weights: tuple[float, float] | None = None,
 ) -> list[SearchHit]:
     filters = filters or SearchFilters()
-    w_sem, w_kw = WEIGHTS[mode]
+    w_sem, w_kw = weights or WEIGHTS[mode]
     stmt = _filtered(select(Job), filters)
     tokens = tokenize(query)
 
