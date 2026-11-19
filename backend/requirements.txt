@@ -11,6 +11,3 @@ pypdf
 google-genai
 pgvector
 fastembed
-pytest
-httpx
-fpdf2
