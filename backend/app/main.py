@@ -8,7 +8,7 @@ from app.api import assistant, auth, evaluation, jobs, recommendations, resume, 
 from app.core.config import settings
 from app.database.session import init_db
 from app.services import embeddings
-
+from app.api import assistant, auth, diagnostics, evaluation, jobs, recommendations, resume, users
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -34,7 +34,7 @@ app.include_router(jobs.router)
 app.include_router(assistant.router)
 app.include_router(recommendations.router)
 app.include_router(evaluation.router)
-
+app.include_router(diagnostics.router)
 
 @app.get("/health", tags=["system"])
 def health():
