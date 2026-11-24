@@ -14,7 +14,7 @@ class Settings(BaseSettings):
     algorithm: str = "HS256"
     access_token_expire_minutes: int = 60
     gemini_api_key: str = ""
-    gemini_model: str = "gemini-2.5-flash"
+    gemini_model: str = "gemini-3.8-flash"
     max_upload_mb: int = 5
     embedding_model: str = "BAAI/bge-small-en-v1.5"
     cors_origins: str = "*"  # comma separated list in production
